@@ -13,5 +13,8 @@ export default defineNuxtConfig({
       ]
     }
   },
+  runtimeConfig: {
+    deepseekApiKey: ''
+  },
   devtools: { enabled: false }
 })

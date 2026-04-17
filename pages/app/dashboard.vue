@@ -6,8 +6,8 @@
       <div class="wb-left">
         <div class="wb-avatar">{{ initials }}</div>
         <div>
-          <div class="wb-greeting">¡Buenos días, {{ firstName }}! 👋</div>
-          <div class="wb-sub">La IA ha preparado {{ recs.length }} recomendaciones para ti hoy</div>
+          <div class="wb-greeting">{{ aiResult?.greeting ?? `¡Hola, ${firstName}! 👋` }}</div>
+          <div class="wb-sub">{{ aiResult?.analysis ?? 'La IA está preparando tus recomendaciones personalizadas...' }}</div>
         </div>
       </div>
       <div class="wb-right">
@@ -68,8 +68,16 @@
         <div v-if="analyzing" class="ai-analyzing">
           <div class="ai-pulse"></div>
           <div>
-            <div style="font-size:14px;font-weight:700;color:var(--grn)">🤖 Analizando tu perfil...</div>
-            <div style="font-size:12px;color:var(--txt3)">Procesando 20+ variables</div>
+            <div style="font-size:14px;font-weight:700;color:var(--grn)">🤖 Analizando tu perfil con IA...</div>
+            <div style="font-size:12px;color:var(--txt3)">DeepSeek procesando tu historial y perfil</div>
+          </div>
+        </div>
+
+        <div v-else-if="aiError" class="ai-error">
+          <span>⚠️</span>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--crl)">Error al conectar con la IA</div>
+            <div style="font-size:11px;color:var(--txt3)">Mostrando recomendaciones basadas en tu perfil</div>
           </div>
         </div>
 
@@ -83,6 +91,7 @@
               </div>
               <div class="rec-match">{{ r.match }}%</div>
             </div>
+            <div v-if="r.reason" class="rec-reason">🤖 {{ r.reason }}</div>
             <div class="pbar" style="margin-top:10px">
               <div class="pbar-fill" :style="{ width: getProgress(r.id) + '%' }"></div>
             </div>
@@ -91,6 +100,23 @@
               <span style="font-size:11px;color:var(--grn);font-weight:700">+{{ r.xp }} XP</span>
             </div>
           </NuxtLink>
+
+          <!-- AI Tip -->
+          <div v-if="aiResult?.tip" class="ai-tip">
+            <span class="ai-tip-icon">💡</span>
+            <div>
+              <div class="ai-tip-label">Consejo del día</div>
+              <div class="ai-tip-text">{{ aiResult.tip }}</div>
+            </div>
+          </div>
+
+          <!-- Knowledge Gaps -->
+          <div v-if="aiResult?.gaps?.length" class="gaps-card">
+            <div class="gaps-label">Áreas a reforzar</div>
+            <div class="gaps-list">
+              <span v-for="g in aiResult.gaps" :key="g" class="gap-tag">{{ g }}</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -148,6 +174,16 @@ const user = useUserStore()
 const courses = useCoursesStore()
 const mounted = ref(false)
 const analyzing = ref(true)
+const aiError = ref(false)
+
+interface AiResult {
+  greeting: string
+  analysis: string
+  recommendations: { courseId: string; reason: string; match: number }[]
+  gaps: string[]
+  tip: string
+}
+const aiResult = ref<AiResult | null>(null)
 
 const firstName = computed(() => user.profile.name.split(' ')[0])
 const initials = computed(() => {
@@ -158,27 +194,76 @@ const initials = computed(() => {
 const days = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 const ldbColors = ['var(--gld)', 'rgba(156,163,175,.4)', 'rgba(156,163,175,.25)', 'var(--grn-a)', 'var(--grn-a)']
 
-const recs = computed(() => [
-  { id: 'c3', match: 97, xp: 550, ...courses.getCourse('c3')! },
-  { id: 'c5', match: 91, xp: 650, ...courses.getCourse('c5')! },
-  { id: 'c4', match: 88, xp: 380, ...courses.getCourse('c4')! },
-].filter(r => r.title))
+const FALLBACK_IDS = ['c3', 'c5', 'c4']
+const FALLBACK_MATCH = [97, 91, 88]
 
-const leaderboard = [
+const recs = computed(() => {
+  const aiRecs = aiResult.value?.recommendations
+  const ids = aiRecs?.length ? aiRecs.map(r => r.courseId) : FALLBACK_IDS
+  return ids.map((id, i) => {
+    const course = courses.getCourse(id)
+    if (!course) return null
+    const aiRec = aiRecs?.[i]
+    return {
+      id,
+      match: aiRec?.match ?? FALLBACK_MATCH[i] ?? 85,
+      reason: aiRec?.reason ?? '',
+      xp: course.modules.reduce((s, m) => s + m.lessons.reduce((ls, l) => ls + (l.xp ?? 100), 0), 0),
+      ...course,
+    }
+  }).filter(Boolean)
+})
+
+const leaderboard = computed(() => [
   { name: 'Carlos Mendoza', xp: 5240, me: false },
   { name: 'Ana López', xp: 4890, me: false },
   { name: 'Jorge Rojas', xp: 4320, me: false },
   { name: 'Luz Martínez', xp: 3920, me: false },
   { name: `Tú — ${firstName.value}`, xp: user.xp, me: true },
-].sort((a, b) => b.xp - a.xp).slice(0, 5)
+].sort((a, b) => b.xp - a.xp).slice(0, 5))
 
 function getProgress(courseId: string) {
   return courses.getCourseProgress(courseId, user.completedLessons)
 }
 
+async function fetchAIRecommendations() {
+  const allCourses = courses.courses ?? []
+  const availableCourses = allCourses
+    .filter((c: any) => !user.completedCourses.includes(c.id))
+    .map((c: any) => ({ id: c.id, title: c.title, category: c.category, duration: c.duration }))
+
+  try {
+    const result = await $fetch<AiResult>('/api/ai-recommend', {
+      method: 'POST',
+      body: {
+        profile: {
+          name: user.profile.name,
+          sector: user.profile.sector,
+          role: user.profile.role,
+          city: user.profile.city,
+          level: user.level,
+          levelName: user.levelName,
+          xp: user.xp,
+          streak: user.streak,
+          interests: user.profile.interests,
+          memberSince: user.profile.memberSince,
+        },
+        completedCourses: user.completedCourses,
+        completedLessons: user.completedLessons.length,
+        availableCourses,
+      },
+    })
+    aiResult.value = result
+  } catch (e) {
+    aiError.value = true
+  } finally {
+    analyzing.value = false
+  }
+}
+
 onMounted(() => {
   mounted.value = true
-  setTimeout(() => { analyzing.value = false }, 2200)
+  fetchAIRecommendations()
 })
 </script>
 

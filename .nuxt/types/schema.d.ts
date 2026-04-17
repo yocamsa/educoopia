@@ -11,6 +11,8 @@ import { NuxtModule, ModuleDependencyMeta } from '@nuxt/schema'
       cdnURL: string,
    },
 
+   deepseekApiKey: string,
+
    nitro: {
       envPrefix: string,
    },

@@ -204,3 +204,42 @@ input[type="range"]::-moz-range-thumb {
   }
   .print-cert * { color: black !important; }
 }
+
+/* ── AI Error Message ──────────────────────────────── */
+.ai-error {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 16px; background: rgba(239,68,68,.08);
+  border: 1px solid rgba(239,68,68,.25); border-radius: 12px;
+  margin-bottom: 16px;
+}
+.ai-error span { font-size: 20px; }
+
+/* ── AI Recommendation Reason ─────────────────────── */
+.rec-reason {
+  font-size: 12px; color: var(--txt3); margin-top: 6px;
+  line-height: 1.4;
+}
+
+/* ── AI Tip ──────────────────────────────────────── */
+.ai-tip {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 16px; background: linear-gradient(135deg, rgba(57,255,138,.08), rgba(255,214,102,.05));
+  border: 1px solid var(--brd); border-radius: 12px;
+  margin-top: 16px;
+}
+.ai-tip-icon { font-size: 24px; flex-shrink: 0; }
+.ai-tip-label { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--grn); font-weight: 700; margin-bottom: 4px; }
+.ai-tip-text { font-size: 13px; color: var(--txt); line-height: 1.5; }
+
+/* ── Knowledge Gaps ──────────────────────────────── */
+.gaps-card {
+  padding: 16px; background: var(--s2); border: 1px solid var(--brd); border-radius: 12px;
+  margin-top: 16px;
+}
+.gaps-label { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--txt3); font-weight: 700; margin-bottom: 10px; }
+.gaps-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.gap-tag {
+  padding: 6px 12px; background: rgba(239,68,68,.12);
+  border: 1px solid rgba(239,68,68,.3); border-radius: 20px;
+  font-size: 12px; color: #F87171; font-weight: 600;
+}

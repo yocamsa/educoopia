@@ -648,7 +648,8 @@ const _inlineRuntimeConfig = {
       }
     }
   },
-  "public": {}
+  "public": {},
+  "deepseekApiKey": ""
 };
 const envOptions = {
   prefix: "NITRO_",
@@ -2578,10 +2579,12 @@ async function getIslandContext(event) {
 	};
 }
 
+const _lazy_xJGptL = () => Promise.resolve().then(function () { return aiRecommend_post$1; });
 const _lazy_8eU0Ye = () => Promise.resolve().then(function () { return renderer; });
 
 const handlers = [
   { route: '', handler: _7FIUAR, lazy: false, middleware: true, method: undefined },
+  { route: '/api/ai-recommend', handler: _lazy_xJGptL, lazy: true, middleware: false, method: "post" },
   { route: '/__nuxt_error', handler: _lazy_8eU0Ye, lazy: true, middleware: false, method: undefined },
   { route: '/__nuxt_island/**', handler: handler$1, lazy: false, middleware: false, method: undefined },
   { route: '/**', handler: _lazy_8eU0Ye, lazy: true, middleware: false, method: undefined }
@@ -2929,6 +2932,75 @@ const styles = {};
 const styles$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: styles
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const aiRecommend_post = defineEventHandler(async (event) => {
+  var _a, _b, _c, _d;
+  const config = useRuntimeConfig();
+  const apiKey = config.deepseekApiKey || process.env.NUXT_DEEPSEEK_API_KEY || process.env.DEEPSEEK_API_KEY;
+  if (!apiKey) {
+    throw createError({ statusCode: 500, message: "DEEPSEEK_API_KEY not configured" });
+  }
+  const body = await readBody(event);
+  const { profile, completedCourses, completedLessons, availableCourses } = body;
+  const prompt = `Eres el motor de personalizaci\xF3n de IA-COOP, una plataforma educativa para cooperativas colombianas.
+
+Perfil del asociado:
+- Nombre: ${profile.name}
+- Sector: ${profile.sector}
+- Rol: ${profile.role}
+- Ciudad: ${profile.city}
+- Nivel: ${profile.level} (${profile.levelName})
+- XP acumulada: ${profile.xp}
+- Racha actual: ${profile.streak} d\xEDas
+- Intereses: ${profile.interests.join(", ")}
+- Miembro desde: ${profile.memberSince}
+
+Progreso:
+- Cursos completados: ${completedCourses.length > 0 ? completedCourses.join(", ") : "ninguno"}
+- Lecciones completadas: ${completedLessons}
+
+Cursos disponibles (no completados):
+${availableCourses.map((c) => `- [${c.id}] ${c.title} (${c.category}, ${c.duration} min)`).join("\n")}
+
+Genera un an\xE1lisis personalizado y responde SOLO con JSON v\xE1lido con esta estructura exacta:
+{
+  "greeting": "saludo corto y motivador de 1 frase, personalizado con el nombre y rol del usuario",
+  "analysis": "an\xE1lisis breve del perfil en 2-3 frases, mencionando fortalezas y oportunidades de crecimiento seg\xFAn su sector e intereses",
+  "recommendations": [
+    {"courseId": "id", "reason": "raz\xF3n espec\xEDfica de 1 frase por qu\xE9 este curso es ideal para este usuario", "match": 95}
+  ],
+  "gaps": ["brecha de conocimiento 1", "brecha de conocimiento 2"],
+  "tip": "consejo pr\xE1ctico del d\xEDa relacionado con cooperativismo o finanzas personales, 1-2 frases"
+}
+
+Reglas:
+- Recomienda exactamente 3 cursos de la lista de disponibles, ordenados por relevancia
+- El match debe estar entre 75 y 99
+- Usa "t\xFA" informal, tono c\xE1lido y motivador
+- Responde en espa\xF1ol colombiano
+- SOLO JSON, sin texto adicional`;
+  const response = await $fetch("https://api.deepseek.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: {
+      model: "deepseek-chat",
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" },
+      temperature: 0.7,
+      max_tokens: 800
+    }
+  });
+  const raw = (_d = (_c = (_b = (_a = response.choices) == null ? void 0 : _a[0]) == null ? void 0 : _b.message) == null ? void 0 : _c.content) != null ? _d : "{}";
+  return JSON.parse(raw);
+});
+
+const aiRecommend_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: aiRecommend_post
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function renderPayloadResponse(ssrContext) {
