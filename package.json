@@ -1,0 +1,15 @@
+{
+  "name": "ia-coop-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "nuxt preview"
+  },
+  "dependencies": {
+    "nuxt": "^3.13.0",
+    "@pinia/nuxt": "^0.5.4",
+    "pinia": "^2.1.7"
+  }
+}
