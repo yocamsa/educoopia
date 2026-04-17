@@ -1,7 +1,10 @@
 <template>
   <div class="app-shell">
+    <!-- Mobile overlay -->
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+    
     <!-- Sidebar -->
-    <aside class="sidebar" :class="{ collapsed: sidebarCollapsed }">
+    <aside class="sidebar" :class="{ collapsed: sidebarCollapsed, open: sidebarOpen }">
       <div class="sb-top">
         <NuxtLink to="/" class="sb-logo">
           <div class="sb-logo-box">IA</div>
@@ -38,6 +41,7 @@
       <!-- Top bar -->
       <header class="topbar">
         <div class="topbar-left">
+          <button class="mobile-menu-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
           <h1 class="page-title">{{ pageTitle }}</h1>
         </div>
         <div class="topbar-right">
@@ -69,6 +73,7 @@ const user = useUserStore()
 const route = useRoute()
 const router = useRouter()
 const sidebarCollapsed = ref(false)
+const sidebarOpen = ref(false)
 
 function switchUser() {
   user.logout()
@@ -188,7 +193,16 @@ const pageTitle = computed(() => {
   display: flex; align-items: center; justify-content: space-between;
 }
 .page-title { font-family: var(--fd); font-size: 18px; font-weight: 700; color: var(--txt); }
+.mobile-menu-btn {
+  display: none; background: transparent; border: 1px solid var(--brd);
+  border-radius: 6px; color: var(--txt); width: 32px; height: 32px;
+  font-size: 18px; cursor: pointer; margin-right: 12px;
+}
 .topbar-right { display: flex; align-items: center; gap: 12px; }
+
+.sidebar-overlay {
+  display: none;
+}
 
 .xp-chip {
   display: flex; align-items: center; gap: 8px;
@@ -213,8 +227,30 @@ const pageTitle = computed(() => {
 .app-content { flex: 1; padding: 28px; overflow-y: auto; }
 
 @media (max-width: 768px) {
-  .sidebar { position: fixed; z-index: 100; height: 100%; }
-  .sidebar.collapsed { width: 0; overflow: hidden; }
-  .app-main { margin-left: 0; }
+  .app-shell { flex-direction: column; }
+  .sidebar { 
+    position: fixed; z-index: 100; height: 100%; 
+    transform: translateX(-100%); width: 240px;
+    transition: transform .25s cubic-bezier(.16,1,.3,1);
+  }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar.collapsed { width: 240px; transform: translateX(-100%); }
+  
+  .sidebar-overlay {
+    display: block;
+    position: fixed; inset: 0; z-index: 90;
+    background: rgba(0,0,0,.6); backdrop-filter: blur(2px);
+  }
+  
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+  .topbar { padding: 10px 14px; }
+  .topbar-left { display: flex; align-items: center; }
+  .page-title { font-size: 15px; }
+  .app-content { padding: 14px; }
+  .xp-chip { display: none; }
+  .streak-chip { padding: 4px 8px; font-size: 12px; }
+  .sb-toggle { display: none; }
 }
 </style>
