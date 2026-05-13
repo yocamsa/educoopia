@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { account, databases } from '~/utils/appwrite'
 
 export interface Persona {
   id: string
@@ -16,101 +17,117 @@ export interface Persona {
   avatar: string
 }
 
-export const PERSONAS: Persona[] = [
-  {
-    id: 'maria',
-    avatar: '👩‍⚕️',
-    aiTag: 'Asociada activa · Perfil intermedio',
-    aiDesc: 'Enfocada en finanzas y beneficios del sector salud. Buen historial de ahorro.',
-    profile: { name: 'María Suárez', cedula: '1.024.567.890', city: 'Bogotá', sector: 'Salud', age: 35, memberSince: 2023, interests: ['Finanzas', 'Salud', 'Ahorro'], role: 'Asociada Activa' },
-    level: 7, xp: 3680, streak: 12,
-    completedLessons: ['c1-m1-l1', 'c1-m1-l2', 'c1-m2-l1', 'c3-m1-l1'],
-    completedModules: ['c1-m1'],
-    completedCourses: [],
-    certificates: [{ id: 'cert-001', courseId: 'c1', courseTitle: 'Principios Cooperativos', issuedAt: new Date('2026-01-15'), certId: 'IACOOP-2026-001A', hours: 20, institution: 'Universidad Cooperativa de Colombia' }],
-    badges: [
-      { id: 'first', emoji: '🌟', name: 'Primer Módulo', earned: true },
-      { id: 'streak10', emoji: '🔥', name: '10 Días', earned: true },
-      { id: 'curious', emoji: '💡', name: 'Curioso', earned: true },
-      { id: 'finanzas', emoji: '💰', name: 'Financiero', earned: false },
-      { id: 'leader', emoji: '👑', name: 'Líder', earned: false },
-      { id: 'master', emoji: '🏆', name: 'Maestro', earned: false },
-    ]
+const DB_ID = import.meta.env.VITE_APPWRITE_DB_ID || 'main'
+const PROFILES_COLLECTION_ID = 'profiles'
+
+const defaultBadges = () => ([
+  { id: 'first', emoji: '🌟', name: 'Primer Módulo', earned: false },
+  { id: 'streak10', emoji: '🔥', name: '10 Días', earned: false },
+  { id: 'curious', emoji: '💡', name: 'Curioso', earned: false },
+  { id: 'finanzas', emoji: '💰', name: 'Financiero', earned: false },
+  { id: 'leader', emoji: '👑', name: 'Líder', earned: false },
+  { id: 'master', emoji: '🏆', name: 'Maestro', earned: false },
+])
+
+const createDefaultPersona = (id: string, name = 'Usuario'): Persona => ({
+  id,
+  avatar: '👤',
+  aiTag: 'Asociado nuevo · Perfil introductorio',
+  aiDesc: 'Perfil recién creado en la plataforma.',
+  profile: {
+    name,
+    cedula: '',
+    city: '',
+    sector: '',
+    age: 0,
+    memberSince: new Date().getFullYear(),
+    interests: [],
+    role: 'Asociado'
   },
-  {
-    id: 'carlos',
-    avatar: '👨‍🔧',
-    aiTag: 'Asociado nuevo · Perfil introductorio',
-    aiDesc: 'Ingresó hace 2 meses. La IA recomienda la ruta de bienvenida obligatoria.',
-    profile: { name: 'Carlos Mendoza', cedula: '1.098.234.567', city: 'Medellín', sector: 'Construcción', age: 28, memberSince: 2026, interests: ['Crédito', 'Vivienda'], role: 'Asociado Nuevo' },
-    level: 1, xp: 120, streak: 2,
-    completedLessons: ['c1-m1-l1'],
-    completedModules: [],
-    completedCourses: [],
-    certificates: [],
-    badges: [
-      { id: 'first', emoji: '🌟', name: 'Primer Módulo', earned: true },
-      { id: 'streak10', emoji: '🔥', name: '10 Días', earned: false },
-      { id: 'curious', emoji: '💡', name: 'Curioso', earned: false },
-      { id: 'finanzas', emoji: '💰', name: 'Financiero', earned: false },
-      { id: 'leader', emoji: '👑', name: 'Líder', earned: false },
-      { id: 'master', emoji: '🏆', name: 'Maestro', earned: false },
-    ]
-  },
-  {
-    id: 'ana',
-    avatar: '👩‍💼',
-    aiTag: 'Líder cooperativa · Perfil avanzado',
-    aiDesc: 'Miembro del consejo directivo. IA prioriza gobernanza y liderazgo estratégico.',
-    profile: { name: 'Ana López', cedula: '1.013.456.789', city: 'Cali', sector: 'Educación', age: 48, memberSince: 2016, interests: ['Liderazgo', 'Gobernanza', 'Inversión'], role: 'Directiva Cooperativa' },
-    level: 12, xp: 9450, streak: 30,
-    completedLessons: ['c1-m1-l1','c1-m1-l2','c1-m2-l1','c2-m1-l1','c2-m1-l2','c2-m2-l1','c3-m1-l1','c3-m1-l2','c3-m2-l1','c3-m2-l2','c4-m1-l1','c4-m2-l1','c5-m1-l1','c5-m1-l2','c5-m2-l1'],
-    completedModules: ['c1-m1','c1-m2','c2-m1','c2-m2','c3-m1','c3-m2','c4-m1','c4-m2','c5-m1','c5-m2'],
-    completedCourses: ['c1','c2','c3','c4','c5'],
-    certificates: [
-      { id: 'cert-a1', courseId: 'c2', courseTitle: '7 Principios Cooperativos', issuedAt: new Date('2025-09-10'), certId: 'IACOOP-2025-A12B', hours: 35, institution: 'Universidad Cooperativa de Colombia' },
-      { id: 'cert-a2', courseId: 'c3', courseTitle: 'Crédito Responsable', issuedAt: new Date('2025-11-20'), certId: 'IACOOP-2025-B34C', hours: 45, institution: 'Universidad Cooperativa de Colombia' },
-      { id: 'cert-a3', courseId: 'c5', courseTitle: 'Inversión Inteligente', issuedAt: new Date('2026-02-05'), certId: 'IACOOP-2026-C56D', hours: 55, institution: 'Universidad Cooperativa de Colombia' },
-    ],
-    badges: [
-      { id: 'first', emoji: '🌟', name: 'Primer Módulo', earned: true },
-      { id: 'streak10', emoji: '🔥', name: '10 Días', earned: true },
-      { id: 'curious', emoji: '💡', name: 'Curioso', earned: true },
-      { id: 'finanzas', emoji: '💰', name: 'Financiero', earned: true },
-      { id: 'leader', emoji: '👑', name: 'Líder', earned: true },
-      { id: 'master', emoji: '🏆', name: 'Maestro', earned: false },
-    ]
-  },
-  {
-    id: 'pedro',
-    avatar: '👨‍💼',
-    aiTag: 'Asociado activo · Perfil comercial',
-    aiDesc: 'Enfocado en crédito para su negocio. IA detecta oportunidades de ahorro e inversión.',
-    profile: { name: 'Pedro García', cedula: '1.070.890.123', city: 'Barranquilla', sector: 'Comercio', age: 42, memberSince: 2021, interests: ['Crédito', 'Microempresa', 'Ahorro'], role: 'Asociado Activo' },
-    level: 4, xp: 1890, streak: 5,
-    completedLessons: ['c1-m1-l1','c1-m1-l2','c3-m1-l1','c3-m1-l2','c4-m1-l1'],
-    completedModules: ['c1-m1','c3-m1'],
-    completedCourses: [],
-    certificates: [],
-    badges: [
-      { id: 'first', emoji: '🌟', name: 'Primer Módulo', earned: true },
-      { id: 'streak10', emoji: '🔥', name: '10 Días', earned: false },
-      { id: 'curious', emoji: '💡', name: 'Curioso', earned: true },
-      { id: 'finanzas', emoji: '💰', name: 'Financiero', earned: false },
-      { id: 'leader', emoji: '👑', name: 'Líder', earned: false },
-      { id: 'master', emoji: '🏆', name: 'Maestro', earned: false },
-    ]
+  level: 1,
+  xp: 0,
+  streak: 0,
+  completedLessons: [],
+  completedModules: [],
+  completedCourses: [],
+  certificates: [],
+  badges: defaultBadges()
+})
+
+const normalizePersona = (raw: any): Persona => {
+  const base = createDefaultPersona(raw?.id ?? raw?.$id ?? '')
+  
+  let parsedCerts = []
+  try { parsedCerts = typeof raw.certificates === 'string' ? JSON.parse(raw.certificates) : (raw.certificates || []) } catch (e) {}
+  
+  let parsedBadges = base.badges
+  try { parsedBadges = typeof raw.badges === 'string' ? JSON.parse(raw.badges) : (raw.badges || base.badges) } catch (e) {}
+
+  const certificates = parsedCerts.map((cert: any) => ({
+    ...cert,
+    issuedAt: cert?.issuedAt ? new Date(cert.issuedAt) : new Date()
+  }))
+
+  return {
+    id: raw?.id ?? raw?.$id ?? base.id,
+    avatar: raw?.avatar ?? base.avatar,
+    aiTag: raw?.aiTag ?? base.aiTag,
+    aiDesc: raw?.aiDesc ?? base.aiDesc,
+    profile: {
+      name: raw?.name ?? base.profile.name,
+      cedula: raw?.cedula ?? base.profile.cedula,
+      city: raw?.city ?? base.profile.city,
+      sector: raw?.sector ?? base.profile.sector,
+      age: raw?.age ?? base.profile.age,
+      memberSince: raw?.memberSince ?? base.profile.memberSince,
+      role: raw?.role ?? base.profile.role,
+      interests: raw?.interests ?? base.profile.interests
+    },
+    level: raw?.level ?? base.level,
+    xp: raw?.xp ?? base.xp,
+    streak: raw?.streak ?? base.streak,
+    completedLessons: raw?.completedLessons ?? base.completedLessons,
+    completedModules: raw?.completedModules ?? base.completedModules,
+    completedCourses: raw?.completedCourses ?? base.completedCourses,
+    certificates,
+    badges: parsedBadges
   }
-]
+}
+
+const serializePersona = (persona: Persona) => ({
+  name: persona.profile.name,
+  cedula: persona.profile.cedula,
+  city: persona.profile.city,
+  sector: persona.profile.sector,
+  age: persona.profile.age,
+  memberSince: persona.profile.memberSince,
+  role: persona.profile.role,
+  interests: persona.profile.interests,
+  level: persona.level,
+  xp: persona.xp,
+  streak: persona.streak,
+  completedLessons: persona.completedLessons,
+  completedModules: persona.completedModules,
+  completedCourses: persona.completedCourses,
+  certificates: JSON.stringify(persona.certificates.map(cert => ({
+    ...cert,
+    issuedAt: cert.issuedAt instanceof Date ? cert.issuedAt.toISOString() : cert.issuedAt
+  }))),
+  badges: JSON.stringify(persona.badges)
+})
 
 export const useUserStore = defineStore('user', () => {
   const currentPersonaId = ref<string | null>(null)
   const isLoggedIn = computed(() => currentPersonaId.value !== null)
 
-  const profile = ref({ ...PERSONAS[0].profile })
-  const level = ref(PERSONAS[0].level)
-  const xp = ref(PERSONAS[0].xp)
-  const streak = ref(PERSONAS[0].streak)
+  const initialPersona = createDefaultPersona('')
+  const profile = ref({ ...initialPersona.profile })
+  const level = ref(initialPersona.level)
+  const xp = ref(initialPersona.xp)
+  const streak = ref(initialPersona.streak)
+  const aiTag = ref(initialPersona.aiTag)
+  const aiDesc = ref(initialPersona.aiDesc)
+  const avatar = ref(initialPersona.avatar)
 
   const XP_PER_LEVEL = 800
   const xpForCurrentLevel = computed(() => (level.value - 1) * XP_PER_LEVEL)
@@ -124,27 +141,81 @@ export const useUserStore = defineStore('user', () => {
     return names[Math.min(level.value, 10)] ?? 'Leyenda'
   })
 
-  const completedLessons = ref<string[]>([...PERSONAS[0].completedLessons])
-  const completedModules = ref<string[]>([...PERSONAS[0].completedModules])
-  const completedCourses = ref<string[]>([...PERSONAS[0].completedCourses])
-  const certificates = ref([...PERSONAS[0].certificates])
-  const badges = ref([...PERSONAS[0].badges])
+  const completedLessons = ref<string[]>([...initialPersona.completedLessons])
+  const completedModules = ref<string[]>([...initialPersona.completedModules])
+  const completedCourses = ref<string[]>([...initialPersona.completedCourses])
+  const certificates = ref([...initialPersona.certificates])
+  const badges = ref([...initialPersona.badges])
 
-  const currentPersona = computed(() => PERSONAS.find(p => p.id === currentPersonaId.value))
+  const currentPersona = computed(() => {
+    if (!currentPersonaId.value) return null
+    return {
+      id: currentPersonaId.value,
+      profile: { ...profile.value },
+      level: level.value,
+      xp: xp.value,
+      streak: streak.value,
+      completedLessons: [...completedLessons.value],
+      completedModules: [...completedModules.value],
+      completedCourses: [...completedCourses.value],
+      certificates: certificates.value.map(cert => ({ ...cert })),
+      badges: badges.value.map(badge => ({ ...badge })),
+      aiTag: aiTag.value,
+      aiDesc: aiDesc.value,
+      avatar: avatar.value
+    }
+  })
 
-  function loadPersona(id: string) {
-    const p = PERSONAS.find(p => p.id === id)
-    if (!p) return
-    currentPersonaId.value = id
-    profile.value = { ...p.profile }
-    level.value = p.level
-    xp.value = p.xp
-    streak.value = p.streak
-    completedLessons.value = [...p.completedLessons]
-    completedModules.value = [...p.completedModules]
-    completedCourses.value = [...p.completedCourses]
-    certificates.value = p.certificates.map(c => ({ ...c, issuedAt: new Date(c.issuedAt) }))
-    badges.value = p.badges.map(b => ({ ...b }))
+  function applyPersona(persona: Persona) {
+    currentPersonaId.value = persona.id
+    profile.value = { ...persona.profile }
+    level.value = persona.level
+    xp.value = persona.xp
+    streak.value = persona.streak
+    completedLessons.value = [...persona.completedLessons]
+    completedModules.value = [...persona.completedModules]
+    completedCourses.value = [...persona.completedCourses]
+    certificates.value = persona.certificates.map(c => ({ ...c, issuedAt: new Date(c.issuedAt) }))
+    badges.value = persona.badges.map(b => ({ ...b }))
+    aiTag.value = persona.aiTag
+    aiDesc.value = persona.aiDesc
+    avatar.value = persona.avatar
+  }
+
+  function isNotFoundError(error: any) {
+    return error?.code === 404 || error?.type === 'document_not_found'
+  }
+
+  async function fetchProfile(userId?: string) {
+    let resolvedId = userId
+    let authUser: any = null
+
+    try {
+      authUser = await account.get()
+      resolvedId = authUser?.$id ?? resolvedId
+    } catch (error) {
+      if (!resolvedId) throw error
+    }
+
+    if (!resolvedId) return
+    currentPersonaId.value = resolvedId
+
+    try {
+      const doc = await databases.getDocument(DB_ID, PROFILES_COLLECTION_ID, resolvedId)
+      const persona = normalizePersona({ ...doc, id: doc.$id })
+      applyPersona(persona)
+    } catch (error: any) {
+      if (!isNotFoundError(error)) throw error
+      const persona = createDefaultPersona(resolvedId, authUser?.name || 'Usuario')
+      const payload = serializePersona(persona)
+      console.log('Payload a enviar a Appwrite:', payload) // Para depurar en la consola
+      const doc = await databases.createDocument(DB_ID, PROFILES_COLLECTION_ID, resolvedId, payload)
+      applyPersona(normalizePersona({ ...doc, id: doc.$id }))
+    }
+  }
+
+  async function loadPersona(id?: string) {
+    await fetchProfile(id)
   }
 
   function logout() { currentPersonaId.value = null }
@@ -158,22 +229,46 @@ export const useUserStore = defineStore('user', () => {
   function isModuleDone(id: string) { return completedModules.value.includes(id) }
   function isCourseDone(id: string) { return completedCourses.value.includes(id) }
 
-  function completeLesson(lessonId: string, xpAmt: number) {
+  async function persistProfile() {
+    if (!currentPersonaId.value) return
+    const payload = serializePersona({
+      id: currentPersonaId.value,
+      profile: { ...profile.value },
+      level: level.value,
+      xp: xp.value,
+      streak: streak.value,
+      completedLessons: [...completedLessons.value],
+      completedModules: [...completedModules.value],
+      completedCourses: [...completedCourses.value],
+      certificates: certificates.value.map(cert => ({ ...cert })),
+      badges: badges.value.map(badge => ({ ...badge })),
+      aiTag: aiTag.value,
+      aiDesc: aiDesc.value,
+      avatar: avatar.value
+    })
+    await databases.updateDocument(DB_ID, PROFILES_COLLECTION_ID, currentPersonaId.value, payload)
+  }
+
+  async function completeLesson(lessonId: string, xpAmt: number) {
     if (isLessonDone(lessonId)) return 0
     completedLessons.value.push(lessonId)
     addXP(xpAmt)
+    await persistProfile()
     return xpAmt
   }
 
-  function completeModule(moduleId: string) {
-    if (!isModuleDone(moduleId)) completedModules.value.push(moduleId)
+  async function completeModule(moduleId: string) {
+    if (isModuleDone(moduleId)) return
+    completedModules.value.push(moduleId)
+    await persistProfile()
   }
 
-  function completeCourse(courseId: string, title: string, hours: number) {
+  async function completeCourse(courseId: string, title: string, hours: number) {
     if (isCourseDone(courseId)) return
     completedCourses.value.push(courseId)
     const certId = `IACOOP-${new Date().getFullYear()}-${Math.random().toString(36).slice(2,6).toUpperCase()}`
     certificates.value.push({ id: `cert-${Date.now()}`, courseId, courseTitle: title, issuedAt: new Date(), certId, hours, institution: 'Universidad Cooperativa de Colombia' })
+    await persistProfile()
   }
 
   return {
@@ -181,8 +276,9 @@ export const useUserStore = defineStore('user', () => {
     xpPercent, xpToNext, xpForNextLevel, xpForCurrentLevel,
     completedLessons, completedModules, completedCourses,
     certificates, badges,
+    aiTag, aiDesc, avatar,
     currentPersonaId, currentPersona, isLoggedIn,
-    loadPersona, logout,
+    loadPersona, fetchProfile, logout,
     addXP, isLessonDone, isModuleDone, isCourseDone,
     completeLesson, completeModule, completeCourse
   }

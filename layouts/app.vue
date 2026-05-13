@@ -88,8 +88,7 @@ onMounted(async () => {
     try {
       const authUser = await account.get()
       if (authUser && authUser.emailVerification) {
-        user.loadPersona('carlos')
-        user.profile.name = authUser.name || 'Usuario'
+        await user.loadPersona(authUser.$id)
       } else {
         router.push('/login')
       }

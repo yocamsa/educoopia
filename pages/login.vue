@@ -65,22 +65,35 @@ async function handleSubmit() {
   loading.value = true
 
   try {
+    // Si ya existe una sesión, no intentamos crear otra
+    let currentUser: any = null
+    try {
+      currentUser = await account.get()
+    } catch (e) {
+      // Ignorar, no hay sesión
+    }
+
     if (mode.value === 'register') {
+      if (currentUser) {
+        await account.deleteSession('current')
+      }
       await account.create(ID.unique(), form.email, form.password, form.name)
       await account.createEmailPasswordSession(form.email, form.password)
       await account.createVerification(`${window.location.origin}/verify`)
       success.value = 'Cuenta creada. Por favor verifica tu correo electrónico.'
       mode.value = 'login'
     } else {
-      await account.createEmailPasswordSession(form.email, form.password)
-      const user = await account.get()
-      if (!user.emailVerification) {
+      if (!currentUser) {
+        await account.createEmailPasswordSession(form.email, form.password)
+        currentUser = await account.get()
+      }
+      
+      if (!currentUser.emailVerification) {
         error.value = 'Por favor verifica tu correo electrónico antes de continuar.'
         await account.deleteSession('current')
         return
       }
-      userStore.loadPersona('carlos') // Cargar perfil por defecto para el prototipo
-      userStore.profile.name = user.name || 'Usuario' // Sobrescribir con nombre real
+      await userStore.loadPersona(currentUser.$id)
       router.push('/app/dashboard')
     }
   } catch (err: any) {
@@ -94,8 +107,7 @@ onMounted(async () => {
   try {
     const user = await account.get()
     if (user && user.emailVerification) {
-      userStore.loadPersona('carlos')
-      userStore.profile.name = user.name || 'Usuario'
+      await userStore.loadPersona(user.$id)
       router.push('/app/dashboard')
     } else if (user && !user.emailVerification) {
       await account.deleteSession('current')
