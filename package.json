@@ -8,8 +8,9 @@
     "preview": "nuxt preview"
   },
   "dependencies": {
-    "nuxt": "^3.13.0",
     "@pinia/nuxt": "^0.5.4",
+    "appwrite": "^25.0.0",
+    "nuxt": "^3.13.0",
     "pinia": "^2.1.7"
   }
 }

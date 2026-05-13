@@ -8,78 +8,101 @@
           <div class="ll-box">IA</div>
           <span><em>IA</em>-COOP</span>
         </div>
-        <p class="login-tagline">Selecciona un perfil para explorar la plataforma</p>
+        <p class="login-tagline">Inicia sesión o regístrate para explorar la plataforma</p>
       </div>
 
-      <!-- Persona cards -->
-      <div class="personas-grid">
-        <button v-for="p in personas" :key="p.id"
-          class="persona-card" :class="{ selected: selected === p.id }"
-          @click="selected = p.id">
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button :class="{ active: mode === 'login' }" @click="mode = 'login'">Ingresar</button>
+          <button :class="{ active: mode === 'register' }" @click="mode = 'register'">Registrarse</button>
+        </div>
 
-          <div class="pc-check" v-if="selected === p.id">✓</div>
-          <div class="pc-avatar">{{ p.avatar }}</div>
-          <div class="pc-name">{{ p.profile.name }}</div>
-          <div class="pc-role">{{ p.profile.role }}</div>
-          <div class="pc-meta">
-            <span class="tag">{{ p.profile.sector }}</span>
-            <span class="tag">{{ p.profile.city }}</span>
-            <span class="tag">{{ p.profile.age }} años</span>
+        <form @submit.prevent="handleSubmit" class="auth-form">
+          <div class="input-group" v-if="mode === 'register'">
+            <label>Nombre</label>
+            <input type="text" v-model="form.name" placeholder="Tu nombre completo" required />
           </div>
-          <div class="pc-since">Asociado desde {{ p.profile.memberSince }}</div>
-
-          <div class="pc-level">
-            <div class="pcl-bar">
-              <div class="pcl-fill" :style="{ width: Math.min((p.xp / ((p.level + 1) * 800)) * 100, 100) + '%' }"></div>
-            </div>
-            <span>Nv.{{ p.level }} · {{ levelName(p.level) }}</span>
+          <div class="input-group">
+            <label>Correo Electrónico</label>
+            <input type="email" v-model="form.email" placeholder="correo@ejemplo.com" required />
+          </div>
+          <div class="input-group">
+            <label>Contraseña</label>
+            <input type="password" v-model="form.password" placeholder="Mínimo 8 caracteres" required minlength="8" />
           </div>
 
-          <div class="pc-ai-tag">{{ p.aiTag }}</div>
-          <div class="pc-ai-desc">{{ p.aiDesc }}</div>
+          <p class="error-msg" v-if="error">{{ error }}</p>
+          <p class="success-msg" v-if="success">{{ success }}</p>
 
-          <!-- Badges preview -->
-          <div class="pc-badges">
-            <span v-for="b in p.badges.filter(b => b.earned)" :key="b.id" :title="b.name">{{ b.emoji }}</span>
-            <span v-if="p.certificates.length" class="pc-certs">🏆 {{ p.certificates.length }} cert.</span>
-          </div>
-        </button>
-      </div>
-
-      <div class="login-footer">
-        <button class="btn btn-p login-btn" :disabled="!selected" @click="enter">
-          Entrar como {{ selectedPersona?.profile.name.split(' ')[0] ?? '...' }} →
-        </button>
-        <p class="login-note">Estado de progreso ficticio para demostración · Sin datos reales</p>
+          <button type="submit" class="btn btn-p submit-btn" :disabled="loading">
+            <span v-if="loading">Cargando...</span>
+            <span v-else>{{ mode === 'login' ? 'Entrar →' : 'Crear Cuenta →' }}</span>
+          </button>
+        </form>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useUserStore, PERSONAS } from '~/stores/user'
+import { account, ID } from '~/utils/appwrite'
+import { useUserStore } from '~/stores/user'
+
 definePageMeta({ layout: 'default' })
 
-const user = useUserStore()
 const router = useRouter()
+const userStore = useUserStore()
 const cnv = ref<HTMLCanvasElement>()
-const selected = ref<string | null>(null)
+const mode = ref<'login' | 'register'>('login')
+const form = reactive({ name: '', email: '', password: '' })
+const error = ref('')
+const success = ref('')
+const loading = ref(false)
 
-const personas = PERSONAS
-const selectedPersona = computed(() => PERSONAS.find(p => p.id === selected.value))
+async function handleSubmit() {
+  error.value = ''
+  success.value = ''
+  loading.value = true
 
-const levelNames = ['', 'Semilla', 'Brote', 'Aprendiz', 'Estudiante', 'Explorador', 'Conocedor', 'Experto', 'Líder', 'Maestro', 'Leyenda']
-function levelName(l: number) { return levelNames[Math.min(l, 10)] ?? 'Leyenda' }
-
-function enter() {
-  if (!selected.value) return
-  user.loadPersona(selected.value)
-  router.push('/app/dashboard')
+  try {
+    if (mode.value === 'register') {
+      await account.create(ID.unique(), form.email, form.password, form.name)
+      await account.createEmailPasswordSession(form.email, form.password)
+      await account.createVerification(`${window.location.origin}/verify`)
+      success.value = 'Cuenta creada. Por favor verifica tu correo electrónico.'
+      mode.value = 'login'
+    } else {
+      await account.createEmailPasswordSession(form.email, form.password)
+      const user = await account.get()
+      if (!user.emailVerification) {
+        error.value = 'Por favor verifica tu correo electrónico antes de continuar.'
+        await account.deleteSession('current')
+        return
+      }
+      userStore.loadPersona('carlos') // Cargar perfil por defecto para el prototipo
+      userStore.profile.name = user.name || 'Usuario' // Sobrescribir con nombre real
+      router.push('/app/dashboard')
+    }
+  } catch (err: any) {
+    error.value = err.message || 'Error en la autenticación.'
+  } finally {
+    loading.value = false
+  }
 }
 
-onMounted(() => {
-  // Redirect if already logged in
-  if (user.isLoggedIn) { router.push('/app/dashboard'); return }
+onMounted(async () => {
+  try {
+    const user = await account.get()
+    if (user && user.emailVerification) {
+      userStore.loadPersona('carlos')
+      userStore.profile.name = user.name || 'Usuario'
+      router.push('/app/dashboard')
+    } else if (user && !user.emailVerification) {
+      await account.deleteSession('current')
+    }
+  } catch (e) {
+    // Not logged in
+  }
 
   const canvas = cnv.value!
   const ctx = canvas.getContext('2d')!
@@ -106,7 +129,7 @@ onMounted(() => {
   padding: 40px 20px; position: relative; background: var(--bg);
 }
 .bg-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
-.login-wrap { position: relative; z-index: 1; width: 100%; max-width: 1000px; }
+.login-wrap { position: relative; z-index: 1; width: 100%; max-width: 480px; }
 
 .login-header { text-align: center; margin-bottom: 36px; }
 .login-logo {
@@ -117,49 +140,32 @@ onMounted(() => {
 .login-logo em { color: var(--grn); font-style: normal; }
 .login-tagline { font-size: 16px; color: var(--txt2); }
 
-.personas-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
-
-.persona-card {
+.auth-card {
   background: var(--s1); border: 1.5px solid var(--brd); border-radius: 18px;
-  padding: 20px; text-align: left; cursor: pointer; transition: all .22s;
-  position: relative; display: flex; flex-direction: column; gap: 8px;
+  padding: 30px; box-shadow: 0 12px 40px rgba(0,0,0,.3);
 }
-.persona-card:hover { border-color: var(--brd2); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,.4); }
-.persona-card.selected { border-color: var(--grn); background: rgba(57,255,138,.05); box-shadow: 0 0 0 3px rgba(57,255,138,.15), 0 12px 40px rgba(0,0,0,.3); }
 
-.pc-check {
-  position: absolute; top: 12px; right: 12px;
-  width: 22px; height: 22px; background: var(--grn); border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--bg); font-size: 12px; font-weight: 800;
-  animation: fadeUp .2s ease;
+.auth-tabs { display: flex; gap: 10px; margin-bottom: 24px; }
+.auth-tabs button {
+  flex: 1; padding: 10px; background: var(--s2); border: 1px solid var(--brd);
+  border-radius: 8px; color: var(--txt2); font-weight: 600; cursor: pointer;
+  transition: all .2s;
 }
-.pc-avatar { font-size: 36px; margin-bottom: 4px; }
-.pc-name { font-family: var(--fd); font-size: 16px; font-weight: 800; color: var(--txt); }
-.pc-role { font-size: 11px; color: var(--grn); font-weight: 700; letter-spacing: .05em; }
-.pc-meta { display: flex; flex-wrap: wrap; gap: 5px; }
-.pc-since { font-size: 11px; color: var(--txt3); }
-
-.pc-level { display: flex; align-items: center; gap: 8px; }
-.pcl-bar { flex: 1; height: 4px; background: var(--s3); border-radius: 2px; overflow: hidden; }
-.pcl-fill { height: 100%; background: linear-gradient(90deg, var(--grn), var(--gld)); border-radius: 2px; }
-.pc-level span { font-size: 11px; color: var(--txt3); font-weight: 600; white-space: nowrap; }
-
-.pc-ai-tag {
-  background: var(--grn-b); border: 1px solid var(--brd2); border-radius: 6px;
-  padding: 4px 8px; font-size: 10px; font-weight: 700; color: var(--grn);
-  letter-spacing: .04em;
+.auth-tabs button.active {
+  background: rgba(57,255,138,.1); border-color: var(--grn); color: var(--grn);
 }
-.pc-ai-desc { font-size: 11px; color: var(--txt3); line-height: 1.5; flex: 1; }
 
-.pc-badges { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
-.pc-badges span { font-size: 16px; }
-.pc-certs { font-size: 11px; font-weight: 700; color: var(--gld); background: var(--gld-a); border-radius: 100px; padding: 2px 8px; }
+.auth-form { display: flex; flex-direction: column; gap: 16px; }
+.input-group { display: flex; flex-direction: column; gap: 8px; }
+.input-group label { font-size: 13px; font-weight: 600; color: var(--txt2); }
+.input-group input {
+  background: var(--s2); border: 1px solid var(--brd); border-radius: 8px;
+  padding: 12px 14px; color: var(--txt); font-size: 14px; outline: none; transition: border-color .2s;
+}
+.input-group input:focus { border-color: var(--grn); }
 
-.login-footer { text-align: center; }
-.login-btn { font-size: 16px; padding: 14px 36px; }
-.login-note { font-size: 12px; color: var(--txt3); margin-top: 12px; }
+.error-msg { color: #ff5c5c; font-size: 13px; font-weight: 600; background: rgba(255,92,92,.1); padding: 10px; border-radius: 8px; }
+.success-msg { color: var(--grn); font-size: 13px; font-weight: 600; background: rgba(57,255,138,.1); padding: 10px; border-radius: 8px; }
 
-@media(max-width:900px) { .personas-grid { grid-template-columns: repeat(2,1fr); } }
-@media(max-width:500px) { .personas-grid { grid-template-columns: 1fr; } }
+.submit-btn { width: 100%; padding: 14px; font-size: 16px; margin-top: 8px; }
 </style>

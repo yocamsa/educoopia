@@ -31,7 +31,7 @@
             <div class="sb-user-name">{{ user.profile.name.split(' ')[0] }}</div>
             <div class="sb-user-level">Nv.{{ user.level }} · {{ user.levelName }}</div>
           </div>
-          <button class="sb-switch-btn" @click="switchUser" title="Cambiar usuario">⇄</button>
+          <button class="sb-switch-btn" @click="handleLogout" title="Cerrar sesión">🚪</button>
         </template>
       </div>
     </aside>
@@ -68,6 +68,7 @@
 
 <script setup lang="ts">
 import { useUserStore } from '~/stores/user'
+import { account } from '~/utils/appwrite'
 
 const user = useUserStore()
 const route = useRoute()
@@ -75,14 +76,27 @@ const router = useRouter()
 const sidebarCollapsed = ref(false)
 const sidebarOpen = ref(false)
 
-function switchUser() {
+async function handleLogout() {
   user.logout()
+  try { await account.deleteSession('current') } catch (e) {}
   router.push('/login')
 }
 
 // Guard: redirect to login if no persona selected
-onMounted(() => {
-  if (!user.isLoggedIn) router.push('/login')
+onMounted(async () => {
+  if (!user.isLoggedIn) {
+    try {
+      const authUser = await account.get()
+      if (authUser && authUser.emailVerification) {
+        user.loadPersona('carlos')
+        user.profile.name = authUser.name || 'Usuario'
+      } else {
+        router.push('/login')
+      }
+    } catch (e) {
+      router.push('/login')
+    }
+  }
 })
 
 const navItems = [
