@@ -47,6 +47,17 @@
               </button>
             </div>
           </div>
+
+          <!-- Tasa efectiva anual personalizada -->
+          <div class="ctrl-group">
+            <label class="input-label">
+              Tasa efectiva anual
+              <span style="font-size:10px;color:var(--txt3);font-weight:400"> · personalizada</span>
+            </label>
+            <div class="amount-display" style="color:var(--crl)">{{ customRate.toFixed(1) }}% EA</div>
+            <input type="range" v-model.number="customRate" :min="0.5" :max="30" :step="0.1" class="range range-crl">
+            <div class="range-labels"><span>0.5%</span><span>30%</span></div>
+          </div>
         </div>
       </div>
 
@@ -81,38 +92,67 @@
         </div>
 
         <!-- Chart -->
-        <div class="card" style="margin-bottom:16px">
+          <div class="card" style="margin-bottom:16px">
           <div class="lbl" style="margin-bottom:16px">Proyección año a año</div>
           <div class="chart-wrap">
             <svg :viewBox="`0 0 ${chartW} ${chartH}`" class="chart-svg">
-              <!-- Grid lines -->
-              <line v-for="i in 4" :key="i"
-                :x1="chartPad" :y1="chartH - chartPad - (i/4)*(chartH-2*chartPad)"
-                :x2="chartW - 10" :y2="chartH - chartPad - (i/4)*(chartH-2*chartPad)"
-                stroke="rgba(255,255,255,.05)" stroke-width="1"/>
+              <!-- Vertical grid lines -->
+              <line v-for="(pt, i) in chartPoints" :key="'vg'+i"
+                :x1="pt.x" :y1="chartPad - 10" :x2="pt.x" :y2="chartH - chartPad"
+                stroke="var(--txt3)" stroke-width="1" opacity=".12"/>
+
+              <!-- Horizontal grid lines -->
+              <line v-for="(t, i) in yTicks" :key="'hg'+i"
+                :x1="chartPad" :y1="t.y" :x2="chartW - 10" :y2="t.y"
+                stroke="var(--txt3)" stroke-width="1" opacity=".12"/>
+
+              <!-- Y-axis labels -->
+              <text v-for="(t, i) in yTicks" :key="'yl'+i"
+                :x="chartPad - 8" :y="t.y + 3" text-anchor="end"
+                fill="var(--txt3)" font-size="8" font-family="var(--fd)">
+                {{ formatShort(t.value) }}
+              </text>
 
               <!-- Area fill -->
-              <path :d="areaPath" fill="url(#chartGrad)" opacity=".6"/>
-              <!-- Line -->
-              <path :d="linePath" fill="none" :stroke="currentProduct.color" stroke-width="2.5" stroke-linecap="round"/>
+              <path :d="areaPath" fill="url(#chartGrad)" opacity=".55"/>
+
               <!-- Investment line (dashed) -->
-              <path :d="investLinePath" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="1.5" stroke-dasharray="4,4"/>
+              <path :d="investLinePath" fill="none" stroke="var(--txt3)" stroke-width="1.5" stroke-dasharray="4,4" opacity=".35"/>
+
+              <!-- Main line -->
+              <path :d="linePath" fill="none" :stroke="currentProduct.color" stroke-width="2.5" stroke-linecap="round"/>
 
               <!-- Dots -->
-              <circle v-for="(pt, i) in chartPoints" :key="i"
-                :cx="pt.x" :cy="pt.y" r="4"
+              <circle v-for="(pt, i) in chartPoints" :key="'dt'+i"
+                :cx="pt.x" :cy="pt.y" r="4.5"
                 :fill="currentProduct.color" stroke="var(--s1)" stroke-width="2"/>
 
-              <!-- Labels -->
-              <text v-for="(pt, i) in chartPoints" :key="`l${i}`"
+              <!-- Value labels on dots -->
+              <text v-for="(pt, i) in chartPoints" :key="'vl'+i"
+                :x="pt.x" :y="pt.y - 10" text-anchor="middle"
+                fill="var(--txt2)" font-size="8" font-family="var(--fd)" font-weight="700">
+                {{ formatShort(pt.val) }}
+              </text>
+
+              <!-- X-axis labels -->
+              <text v-for="(pt, i) in chartPoints" :key="'xl'+i"
                 :x="pt.x" :y="chartH - 6" text-anchor="middle"
-                fill="rgba(255,255,255,.3)" font-size="9">
+                fill="var(--txt3)" font-size="9">
                 Año {{ i + 1 }}
               </text>
 
+              <!-- Legend -->
+              <g :transform="`translate(${chartW - 118}, 12)`">
+                <rect x="0" y="0" width="110" height="38" rx="6" fill="var(--s1)" stroke="var(--brd)"/>
+                <line x1="10" y1="13" x2="24" y2="13" :stroke="currentProduct.color" stroke-width="2.5" stroke-linecap="round"/>
+                <text x="28" y="16" fill="var(--txt2)" font-size="8" font-family="var(--fd)">Proyección</text>
+                <line x1="10" y1="29" x2="24" y2="29" stroke="var(--txt3)" stroke-width="1.5" stroke-dasharray="3,3" opacity=".5"/>
+                <text x="28" y="32" fill="var(--txt3)" font-size="8" font-family="var(--fd)">Invertido</text>
+              </g>
+
               <defs>
                 <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" :stop-color="currentProduct.color" stop-opacity=".3"/>
+                  <stop offset="0%" :stop-color="currentProduct.color" stop-opacity=".25"/>
                   <stop offset="100%" :stop-color="currentProduct.color" stop-opacity="0"/>
                 </linearGradient>
               </defs>
@@ -162,6 +202,7 @@ const capital = ref(5000000)
 const plazo = ref(3)
 const aporteMensual = ref(0)
 const selectedProduct = ref('cdt180')
+const customRate = ref(9.5) // se sincroniza con el producto al iniciar
 
 const productIcons: Record<string, string> = {
   ahorro: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>',
@@ -176,7 +217,15 @@ const products = [
   { id: 'cdt360', name: 'CDT 360 días', rate: 11.2, icon: productIcons.cdt360, color: '#FF6058', desc: 'Mayor rentabilidad, largo plazo' },
 ]
 
-const currentProduct = computed(() => products.find(p => p.id === selectedProduct.value)!)
+const currentProduct = computed(() => {
+  const p = products.find(p => p.id === selectedProduct.value)!
+  return { ...p, rate: customRate.value }
+})
+
+watch(selectedProduct, (id) => {
+  const p = products.find(p => p.id === id)
+  if (p) customRate.value = p.rate
+})
 
 function calcFV(pv: number, r: number, n: number, pmt: number) {
   const ra = Math.pow(1 + r, n)
@@ -201,8 +250,24 @@ const returnPct = computed(() => Math.round((totalGain.value / totalInvested.val
 
 // ── Chart ─────────────────────────────────
 const chartW = 500
-const chartH = 200
-const chartPad = 30
+const chartH = 220
+const chartPad = 38
+
+const yTicks = computed(() => {
+  const maxVal = Math.max(...yearlyData.value.map(r => r.total))
+  const minVal = capital.value * 0.8
+  const range = maxVal - minVal
+  if (range <= 0) return []
+  const rawStep = range / 4
+  const mag = Math.pow(10, Math.floor(Math.log10(rawStep)))
+  const niceStep = Math.ceil(rawStep / mag) * mag
+  const ticks = []
+  for (let v = Math.floor(minVal / niceStep) * niceStep; v <= maxVal + niceStep * 0.5; v += niceStep) {
+    const y = chartH - chartPad - ((v - minVal) / (range + 1)) * (chartH - 2 * chartPad)
+    ticks.push({ value: Math.round(v), y })
+  }
+  return ticks
+})
 
 const chartPoints = computed(() => {
   const maxVal = Math.max(...yearlyData.value.map(r => r.total))
@@ -242,14 +307,17 @@ function formatCOP(n: number) {
   if (n >= 1000) return '$' + Math.round(n / 1000) + 'K'
   return '$' + n.toLocaleString('es-CO')
 }
+function formatShort(n: number) {
+  if (n >= 1_000_000) return '$' + (n / 1_000_000).toFixed(n >= 10_000_000 ? 0 : 1) + 'M'
+  if (n >= 1000) return '$' + Math.round(n / 1000) + 'K'
+  return '$' + n
+}
 </script>
 
 <style scoped>
 .sim-page { width: 100%; }
 .sim-layout { display: grid; grid-template-columns: 380px 1fr; gap: 20px; align-items: start; }
-.sim-controls { max-height: calc(100vh - 140px); overflow-y: auto; padding-right: 4px; }
-.sim-controls::-webkit-scrollbar { width: 3px; }
-.sim-controls::-webkit-scrollbar-thumb { background: var(--brd); border-radius: 2px; }
+.sim-controls { }
 
 .ctrl-group { margin-bottom: 22px; }
 .ctrl-group:last-child { margin-bottom: 0; }
@@ -259,6 +327,8 @@ function formatCOP(n: number) {
 .range::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--grn); cursor: pointer; border: none; }
 .range-sky::-webkit-slider-thumb { background: var(--sky); box-shadow: 0 0 8px rgba(56,189,248,.4); }
 .range-gld::-webkit-slider-thumb { background: var(--gld); box-shadow: 0 0 8px rgba(245,192,24,.4); }
+.range-crl::-webkit-slider-thumb { background: var(--crl); box-shadow: 0 0 8px rgba(199,96,87,.4); }
+.range-crl::-moz-range-thumb { background: var(--crl); border: none; }
 .range-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--txt3); font-weight: 600; }
 
 .product-list { display: flex; flex-direction: column; gap: 8px; }
