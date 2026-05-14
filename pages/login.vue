@@ -5,8 +5,8 @@
     <div class="login-wrap">
       <div class="login-header">
         <div class="login-logo">
-          <div class="ll-box">IA</div>
-          <span><em>IA</em>-COOP</span>
+          <div class="ll-box">EC</div>
+          <span>EduCoop-IA</span>
         </div>
         <p class="login-tagline">Inicia sesión o regístrate para explorar la plataforma</p>
       </div>
@@ -119,15 +119,15 @@ onMounted(async () => {
   const canvas = cnv.value!
   const ctx = canvas.getContext('2d')!
   let W = 0, H = 0
-  const pts: any[] = []
+  const pts: Array<{ x: number; y: number; vx: number; vy: number; r: number; o: number }> = []
   function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight }
   resize(); window.addEventListener('resize', resize)
   for (let i = 0; i < 60; i++) pts.push({ x: Math.random()*1600, y: Math.random()*900, vx: (Math.random()-.5)*.3, vy: (Math.random()-.5)*.3, r: Math.random()*1.5+.3, o: Math.random()*.4+.1 })
   ;(function draw() {
     ctx.clearRect(0,0,W,H)
     for (let i = 0; i < pts.length; i++) {
-      for (let j = i+1; j < pts.length; j++) { const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.hypot(dx,dy); if(d<100){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.strokeStyle=`rgba(57,255,138,${.1*(1-d/100)})`;ctx.lineWidth=.5;ctx.stroke()} }
-      const p=pts[i];ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(57,255,138,${p.o})`;ctx.fill()
+      for (let j = i+1; j < pts.length; j++) { const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.hypot(dx,dy); if(d<100){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.strokeStyle=`rgba(42,123,107,${.1*(1-d/100)})`;ctx.lineWidth=.5;ctx.stroke()} }
+      const p=pts[i];ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(42,123,107,${p.o})`;ctx.fill()
       p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1
     }
     requestAnimationFrame(draw)
@@ -148,7 +148,7 @@ onMounted(async () => {
   display: inline-flex; align-items: center; gap: 10px;
   font-family: var(--fd); font-weight: 800; font-size: 28px; color: var(--txt); margin-bottom: 12px;
 }
-.ll-box { width: 40px;height:40px;background:var(--grn);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--bg);font-size:16px;font-weight:900; }
+.ll-box { width: 40px;height:40px;background:var(--grn);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:900; }
 .login-logo em { color: var(--grn); font-style: normal; }
 .login-tagline { font-size: 16px; color: var(--txt2); }
 
@@ -164,7 +164,7 @@ onMounted(async () => {
   transition: all .2s;
 }
 .auth-tabs button.active {
-  background: rgba(57,255,138,.1); border-color: var(--grn); color: var(--grn);
+  background: var(--grn-a); border-color: var(--grn); color: var(--grn);
 }
 
 .auth-form { display: flex; flex-direction: column; gap: 16px; }
@@ -177,7 +177,7 @@ onMounted(async () => {
 .input-group input:focus { border-color: var(--grn); }
 
 .error-msg { color: #ff5c5c; font-size: 13px; font-weight: 600; background: rgba(255,92,92,.1); padding: 10px; border-radius: 8px; }
-.success-msg { color: var(--grn); font-size: 13px; font-weight: 600; background: rgba(57,255,138,.1); padding: 10px; border-radius: 8px; }
+.success-msg { color: var(--grn); font-size: 13px; font-weight: 600; background: var(--grn-a); padding: 10px; border-radius: 8px; }
 
 .submit-btn { width: 100%; padding: 14px; font-size: 16px; margin-top: 8px; }
 </style>

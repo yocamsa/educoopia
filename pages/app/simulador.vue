@@ -39,7 +39,7 @@
                 class="product-btn" :class="{ active: selectedProduct === p.id }"
                 @click="selectedProduct = p.id">
                 <div class="pb-top">
-                  <span class="pb-icon">{{ p.icon }}</span>
+                  <span class="pb-icon" v-html="p.icon"></span>
                   <span class="pb-name">{{ p.name }}</span>
                   <span class="pb-rate" :style="{ color: p.color }">{{ p.rate }}% EA</span>
                 </div>
@@ -146,7 +146,8 @@
             </table>
           </div>
           <div class="tip-box">
-            💡 <strong>Tip:</strong> Los aportes mensuales adicionales aceleran significativamente el crecimiento gracias al interés compuesto.
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" style="flex-shrink:0;color:var(--gld)"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+            <strong>Tip:</strong> Los aportes mensuales adicionales aceleran significativamente el crecimiento gracias al interés compuesto.
           </div>
         </div>
       </div>
@@ -162,11 +163,17 @@ const plazo = ref(3)
 const aporteMensual = ref(0)
 const selectedProduct = ref('cdt180')
 
+const productIcons: Record<string, string> = {
+  ahorro: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>',
+  cdt90: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+  cdt180: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>',
+  cdt360: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+}
 const products = [
-  { id: 'ahorro', name: 'Cuenta de Ahorros', rate: 5.5, icon: '🐷', color: '#38BDF8', desc: 'Liquidez inmediata, bajo riesgo' },
-  { id: 'cdt90', name: 'CDT 90 días', rate: 8.0, icon: '📄', color: '#39FF8A', desc: 'Corto plazo, renovación trimestral' },
-  { id: 'cdt180', name: 'CDT 180 días', rate: 9.5, icon: '📋', color: '#F5C018', desc: 'Semestral, buena rentabilidad' },
-  { id: 'cdt360', name: 'CDT 360 días', rate: 11.2, icon: '💎', color: '#FF6058', desc: 'Mayor rentabilidad, largo plazo' },
+  { id: 'ahorro', name: 'Cuenta de Ahorros', rate: 5.5, icon: productIcons.ahorro, color: '#38BDF8', desc: 'Liquidez inmediata, bajo riesgo' },
+  { id: 'cdt90', name: 'CDT 90 días', rate: 8.0, icon: productIcons.cdt90, color: '#2A7B6B', desc: 'Corto plazo, renovación trimestral' },
+  { id: 'cdt180', name: 'CDT 180 días', rate: 9.5, icon: productIcons.cdt180, color: '#F5C018', desc: 'Semestral, buena rentabilidad' },
+  { id: 'cdt360', name: 'CDT 360 días', rate: 11.2, icon: productIcons.cdt360, color: '#FF6058', desc: 'Mayor rentabilidad, largo plazo' },
 ]
 
 const currentProduct = computed(() => products.find(p => p.id === selectedProduct.value)!)
@@ -238,13 +245,18 @@ function formatCOP(n: number) {
 </script>
 
 <style scoped>
-.sim-page { max-width: 1100px; }
+.sim-page { width: 100%; }
 .sim-layout { display: grid; grid-template-columns: 380px 1fr; gap: 20px; align-items: start; }
+.sim-controls { max-height: calc(100vh - 140px); overflow-y: auto; padding-right: 4px; }
+.sim-controls::-webkit-scrollbar { width: 3px; }
+.sim-controls::-webkit-scrollbar-thumb { background: var(--brd); border-radius: 2px; }
 
 .ctrl-group { margin-bottom: 22px; }
 .ctrl-group:last-child { margin-bottom: 0; }
 .amount-display { font-family: var(--fd); font-size: 26px; font-weight: 800; color: var(--grn); margin-bottom: 8px; }
-.range { width: 100%; margin-bottom: 4px; }
+.range { width: 100%; margin: 6px 0 4px; display: block; }
+.range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--grn); cursor: pointer; box-shadow: 0 0 8px rgba(42,123,107,.35); border: none; }
+.range::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--grn); cursor: pointer; border: none; }
 .range-sky::-webkit-slider-thumb { background: var(--sky); box-shadow: 0 0 8px rgba(56,189,248,.4); }
 .range-gld::-webkit-slider-thumb { background: var(--gld); box-shadow: 0 0 8px rgba(245,192,24,.4); }
 .range-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--txt3); font-weight: 600; }
@@ -257,7 +269,8 @@ function formatCOP(n: number) {
 .product-btn:hover { border-color: var(--brd2); }
 .product-btn.active { border-color: var(--brd2); background: var(--s3); }
 .pb-top { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
-.pb-icon { font-size: 16px; }
+.pb-icon { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex-shrink: 0; }
+.pb-icon svg { width: 18px; height: 18px; }
 .pb-name { font-size: 13px; font-weight: 700; color: var(--txt); flex: 1; }
 .pb-rate { font-size: 13px; font-weight: 800; font-family: var(--fd); }
 .pb-desc { font-size: 11px; color: var(--txt3); }
@@ -282,9 +295,10 @@ function formatCOP(n: number) {
   border-bottom: 1px solid var(--brd); white-space: nowrap;
 }
 .data-table td { padding: 10px 12px; border-bottom: 1px solid var(--brd); color: var(--txt2); }
-.data-table .last-row td { background: rgba(57,255,138,.05); color: var(--txt); }
+.data-table .last-row td { background: var(--grn-b); color: var(--txt); }
 
 .tip-box {
+  display: flex; align-items: center; gap: 8px;
   background: rgba(245,192,24,.07); border: 1px solid rgba(245,192,24,.2);
   border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--txt2);
 }

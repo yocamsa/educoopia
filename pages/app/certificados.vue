@@ -3,7 +3,9 @@
 
     <!-- Empty state -->
     <div v-if="user.certificates.length === 0" class="empty-state">
-      <div class="es-icon">🎓</div>
+      <div class="es-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="56" height="56"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+      </div>
       <h2>Aún no tienes certificados</h2>
       <p>Completa un curso para obtener tu primer certificado digital verificable.</p>
       <NuxtLink to="/app/cursos" class="btn btn-p" style="margin-top:16px">Explorar cursos →</NuxtLink>
@@ -28,8 +30,13 @@
           class="cert-preview-card rev" :class="{ on: mounted }"
           :style="{ transitionDelay: (0.1 + i * 0.08) + 's' }">
 
-          <div class="cpc-badge">✅ Verificado</div>
-          <div class="cpc-emoji">🏆</div>
+          <div class="cpc-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Verificado
+          </div>
+          <div class="cpc-emoji">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="32" height="32" style="color:var(--gld)"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+          </div>
           <div class="cpc-title">{{ cert.courseTitle }}</div>
           <div class="cpc-inst">{{ cert.institution }}</div>
           <div class="cpc-meta">
@@ -63,13 +70,15 @@
             <!-- Header -->
             <div class="cert-header">
               <div class="cert-logo-wrap">
-                <div class="cert-logo-box">IA</div>
+                <div class="cert-logo-box">EC</div>
                 <div>
-                  <div class="cert-logo-name">IA-COOP</div>
+                  <div class="cert-logo-name">EduCoop-IA</div>
                   <div class="cert-logo-sub">Plataforma de Educación Cooperativa</div>
                 </div>
               </div>
-              <div class="cert-seal">🏆</div>
+              <div class="cert-seal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" style="color:#fff"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+              </div>
             </div>
 
             <!-- Decorative line -->
@@ -91,7 +100,7 @@
 
             <!-- Institution -->
             <div class="cert-inst-block">
-              <span style="font-size:22px">🏛️</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" style="flex-shrink:0;color:var(--gld)"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V7l-8-4"/><path d="M9 21V9"/><path d="M15 21V9"/><path d="M9 21h6"/></svg>
               <div>
                 <div class="cib-name">{{ activeCert.institution }}</div>
                 <div class="cib-sub">Institución educativa habilitadora · Registro SNIES</div>
@@ -170,10 +179,10 @@ onMounted(() => { mounted.value = true })
 </script>
 
 <style scoped>
-.certs-page { max-width: 1100px; }
+.certs-page { width: 100%; overflow-x: hidden; }
 
 .empty-state { text-align: center; padding: 80px 20px; }
-.es-icon { font-size: 64px; margin-bottom: 16px; }
+.es-icon { margin-bottom: 16px; color: var(--txt3); opacity: .5; }
 .empty-state h2 { font-size: 22px; margin-bottom: 8px; }
 .empty-state p { font-size: 14px; color: var(--txt2); }
 
@@ -194,13 +203,13 @@ onMounted(() => { mounted.value = true })
   width: 60%; height: 3px; background: linear-gradient(90deg, var(--grn), var(--gld));
   border-radius: 0 0 3px 3px;
 }
-.cert-preview-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(57,255,138,.1); }
+.cert-preview-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(42,123,107,.12); }
 .cpc-badge {
   display: inline-flex; align-items: center; gap: 4px;
   background: var(--grn-b); border: 1px solid var(--brd2); border-radius: 100px;
   padding: 3px 10px; font-size: 11px; font-weight: 700; color: var(--grn); margin-bottom: 14px;
 }
-.cpc-emoji { font-size: 36px; margin-bottom: 10px; }
+.cpc-emoji { display: flex; justify-content: center; margin-bottom: 10px; }
 .cpc-title { font-family: var(--fd); font-size: 15px; font-weight: 700; margin-bottom: 6px; line-height: 1.3; }
 .cpc-inst { font-size: 12px; color: var(--txt3); margin-bottom: 10px; }
 .cpc-meta { display: flex; gap: 12px; justify-content: center; font-size: 12px; color: var(--txt2); font-weight: 600; margin-bottom: 6px; }
@@ -218,23 +227,23 @@ onMounted(() => { mounted.value = true })
 
 /* Certificate */
 .certificate {
-  background: linear-gradient(135deg, #0A1A0F, #0F2518);
-  border: 2px solid rgba(57,255,138,.3); border-radius: 20px;
+  background: var(--s1);
+  border: 2px solid var(--brd2); border-radius: 20px;
   padding: 36px; position: relative; overflow: hidden;
-  box-shadow: 0 0 60px rgba(57,255,138,.12);
+  box-shadow: 0 4px 40px rgba(36,28,20,.08);
 }
-.cert-corner { position: absolute; width: 50px; height: 50px; opacity: .18; }
-.cert-corner.tl { top:10px;left:10px;border-top:2px solid #39FF8A;border-left:2px solid #39FF8A;border-radius:4px 0 0 0 }
-.cert-corner.tr { top:10px;right:10px;border-top:2px solid #39FF8A;border-right:2px solid #39FF8A;border-radius:0 4px 0 0 }
-.cert-corner.bl { bottom:10px;left:10px;border-bottom:2px solid #39FF8A;border-left:2px solid #39FF8A;border-radius:0 0 0 4px }
-.cert-corner.br { bottom:10px;right:10px;border-bottom:2px solid #39FF8A;border-right:2px solid #39FF8A;border-radius:0 0 4px 0 }
+.cert-corner { position: absolute; width: 50px; height: 50px; opacity: .25; }
+.cert-corner.tl { top:10px;left:10px;border-top:2px solid var(--grn);border-left:2px solid var(--grn);border-radius:4px 0 0 0 }
+.cert-corner.tr { top:10px;right:10px;border-top:2px solid var(--grn);border-right:2px solid var(--grn);border-radius:0 4px 0 0 }
+.cert-corner.bl { bottom:10px;left:10px;border-bottom:2px solid var(--grn);border-left:2px solid var(--grn);border-radius:0 0 0 4px }
+.cert-corner.br { bottom:10px;right:10px;border-bottom:2px solid var(--grn);border-right:2px solid var(--grn);border-radius:0 0 4px 0 }
 
 .cert-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
 .cert-logo-wrap { display: flex; align-items: center; gap: 10px; }
-.cert-logo-box { width: 36px;height: 36px;background: var(--grn);border-radius: 9px;display: flex;align-items: center;justify-content: center;color: var(--bg);font-size: 14px;font-weight: 900; }
+.cert-logo-box { width: 36px;height: 36px;background: var(--grn);border-radius: 9px;display: flex;align-items: center;justify-content: center;color: #fff;font-size: 14px;font-weight: 900; }
 .cert-logo-name { font-family: var(--fd); font-size: 16px; font-weight: 800; color: var(--grn); }
 .cert-logo-sub { font-size: 10px; color: var(--txt3); }
-.cert-seal { width: 52px;height: 52px;border-radius: 50%;background: linear-gradient(135deg, var(--gld), var(--crl));display: flex;align-items: center;justify-content: center;font-size: 22px; }
+.cert-seal { width: 52px;height: 52px;border-radius: 50%;background: linear-gradient(135deg, var(--gld), var(--crl));display: flex;align-items: center;justify-content: center; }
 
 .cert-deco-line { height: 2px; background: linear-gradient(90deg, transparent, var(--grn), var(--gld), transparent); margin: 16px 0; }
 
@@ -243,12 +252,12 @@ onMounted(() => { mounted.value = true })
 .cert-recipient { font-family: var(--fd); font-size: 30px; font-weight: 800; color: var(--txt); margin-bottom: 4px; }
 .cert-recipient-id { font-size: 13px; color: var(--txt2); }
 
-.cert-course-block { background: rgba(57,255,138,.04); border: 1px solid var(--brd); border-radius: 12px; padding: 18px; text-align: center; margin-bottom: 16px; }
+.cert-course-block { background: var(--grn-b); border: 1px solid var(--brd); border-radius: 12px; padding: 18px; text-align: center; margin-bottom: 16px; }
 .ccb-label { font-size: 10px; letter-spacing: .15em; text-transform: uppercase; color: var(--txt3); margin-bottom: 8px; }
 .ccb-title { font-family: var(--fd); font-size: 20px; font-weight: 800; color: var(--txt); margin-bottom: 4px; }
 .ccb-hours { font-size: 13px; color: var(--txt2); }
 
-.cert-inst-block { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(57,255,138,.03); border: 1px solid var(--brd); border-radius: 10px; margin-bottom: 18px; }
+.cert-inst-block { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--s2); border: 1px solid var(--brd); border-radius: 10px; margin-bottom: 18px; }
 .cib-name { font-size: 13px; font-weight: 700; color: var(--txt); }
 .cib-sub { font-size: 11px; color: var(--txt3); }
 
@@ -267,11 +276,11 @@ onMounted(() => { mounted.value = true })
 @media(max-width:600px) { .certs-grid { grid-template-columns: 1fr; } }
 
 @media print {
-  .no-print, .modal-actions, .certs-page { display: none !important; }
+  .no-print { display: none !important; }
   .modal-overlay { position: static !important; background: none !important; backdrop-filter: none !important; padding: 0 !important; }
   .modal-wrap { max-width: 100%; }
-  .certificate { background: white !important; border-color: #ccc !important; box-shadow: none !important; }
+  .certificate { background: white !important; border-color: var(--brd2) !important; box-shadow: none !important; }
   .certificate * { color: black !important; }
-  .cert-deco-line { background: #ccc !important; }
+  .cert-deco-line { background: var(--brd) !important; }
 }
 </style>

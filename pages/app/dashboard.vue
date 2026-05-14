@@ -6,22 +6,22 @@
       <div class="wb-left">
         <div class="wb-avatar">{{ initials }}</div>
         <div>
-          <div class="wb-greeting">{{ aiResult?.greeting ?? `¡Hola, ${firstName}! 👋` }}</div>
+          <div class="wb-greeting">{{ aiResult?.greeting ?? `Hola, ${firstName}` }}</div>
           <div class="wb-sub">{{ aiResult?.analysis ?? 'La IA está preparando tus recomendaciones personalizadas...' }}</div>
         </div>
       </div>
       <div class="wb-right">
         <div class="wb-stat">
           <div class="wb-stat-n">{{ user.streak }}</div>
-          <div class="wb-stat-l">🔥 días de racha</div>
+          <div class="wb-stat-l">días de racha</div>
         </div>
         <div class="wb-stat">
           <div class="wb-stat-n">{{ user.completedLessons.length }}</div>
-          <div class="wb-stat-l">📚 lecciones</div>
+          <div class="wb-stat-l">lecciones</div>
         </div>
         <div class="wb-stat">
           <div class="wb-stat-n">{{ user.certificates.length }}</div>
-          <div class="wb-stat-l">🏆 certificados</div>
+          <div class="wb-stat-l">certificados</div>
         </div>
       </div>
     </div>
@@ -50,7 +50,8 @@
       </div>
       <!-- Streak week -->
       <div class="streak-week">
-        <div v-for="(day, i) in days" :key="i" class="stk-d" :class="{ done: i < 6, hoy: i === 6 }">
+        <div v-for="(day, i) in dayNames" :key="i" class="stk-d"
+          :class="{ done: i < todayIdx, hoy: i === todayIdx }">
           {{ day }}
         </div>
       </div>
@@ -68,13 +69,13 @@
         <div v-if="analyzing" class="ai-analyzing">
           <div class="ai-pulse"></div>
           <div>
-            <div style="font-size:14px;font-weight:700;color:var(--grn)">🤖 Analizando tu perfil con IA...</div>
+            <div style="font-size:14px;font-weight:700;color:var(--grn)">Analizando tu perfil con IA...</div>
             <div style="font-size:12px;color:var(--txt3)">DeepSeek procesando tu historial y perfil</div>
           </div>
         </div>
 
         <div v-else-if="aiError" class="ai-error">
-          <span>⚠️</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" style="flex-shrink:0;color:var(--crl)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
           <div>
             <div style="font-size:13px;font-weight:700;color:var(--crl)">Error al conectar con la IA</div>
             <div style="font-size:11px;color:var(--txt3)">Mostrando recomendaciones basadas en tu perfil</div>
@@ -103,7 +104,9 @@
 
           <!-- AI Tip -->
           <div v-if="aiResult?.tip" class="ai-tip">
-            <span class="ai-tip-icon">💡</span>
+            <span class="ai-tip-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+            </span>
             <div>
               <div class="ai-tip-label">Consejo del día</div>
               <div class="ai-tip-text">{{ aiResult.tip }}</div>
@@ -139,20 +142,28 @@
           <div class="sect-hd" style="margin-bottom:14px"><div class="lbl">Acceso rápido</div></div>
           <div class="quick-list">
             <NuxtLink to="/app/cursos" class="quick-item">
-              <span>📚</span><span>Explorar cursos</span><span class="qi-arr">→</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" style="flex-shrink:0"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5A2.5 2.5 0 0 1 4 19.5Z"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M9 7h6"/><path d="M9 11h6"/></svg>
+              <span>Explorar cursos</span><span class="qi-arr">→</span>
             </NuxtLink>
             <NuxtLink to="/app/simulador" class="quick-item">
-              <span>📊</span><span>Simulador financiero</span><span class="qi-arr">→</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" style="flex-shrink:0"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+              <span>Simulador financiero</span><span class="qi-arr">→</span>
             </NuxtLink>
             <NuxtLink to="/app/certificados" class="quick-item">
-              <span>🏆</span><span>Mis certificados</span><span class="qi-arr">→</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" style="flex-shrink:0"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+              <span>Mis certificados</span><span class="qi-arr">→</span>
             </NuxtLink>
           </div>
         </div>
 
         <!-- Leaderboard mini -->
-        <div class="card" style="margin-top:18px">
-          <div class="sect-hd" style="margin-bottom:14px"><div class="lbl">🏆 Top esta semana</div></div>
+          <div class="card" style="margin-top:18px">
+          <div class="sect-hd" style="margin-bottom:14px">
+            <div class="lbl">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Top esta semana
+            </div>
+          </div>
           <div v-for="(p, i) in leaderboard" :key="i" class="ldb-row" :class="{ 'ldb-me': p.me }">
             <div class="ldb-num" :style="{ background: ldbColors[i] }">{{ i+1 }}</div>
             <div style="flex:1;font-size:13px;font-weight:600" :style="{ color: p.me ? 'var(--grn)' : 'var(--txt)' }">{{ p.name }}</div>
@@ -191,7 +202,12 @@ const initials = computed(() => {
   return (p[0][0] + (p[1]?.[0] ?? '')).toUpperCase()
 })
 
-const days = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
+// Días de la semana: L, M, X, J, V, S, D
+const dayNames = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
+const todayIdx = computed(() => {
+  const jsDay = new Date().getDay() // 0=Dom, 1=Lun, ..., 6=Sáb
+  return jsDay === 0 ? 6 : jsDay - 1 // convertir a índice 0-6 (Lun=0 ... Dom=6)
+})
 const ldbColors = ['var(--gld)', 'rgba(156,163,175,.4)', 'rgba(156,163,175,.25)', 'var(--grn-a)', 'var(--grn-a)']
 
 const FALLBACK_IDS = ['c3', 'c5', 'c4']
@@ -268,7 +284,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.dashboard { max-width: 1100px; }
+.dashboard { width: 100%; overflow-x: hidden; }
 
 .welcome-banner {
   background: linear-gradient(135deg, var(--s2), var(--s3));
@@ -316,10 +332,10 @@ onMounted(() => {
   display: flex; align-items: center; justify-content: center;
   font-size: 10px; font-weight: 700; color: var(--txt3);
 }
-.stk-d.done { background: rgba(57,255,138,.12); border-color: var(--grn); color: var(--grn); }
-.stk-d.hoy { background: var(--grn); border-color: var(--grn); color: var(--bg); box-shadow: 0 0 10px rgba(57,255,138,.4); }
+.stk-d.done { background: var(--grn-a); border-color: var(--grn); color: var(--grn); }
+.stk-d.hoy { background: var(--grn); border-color: var(--grn); color: var(--bg); box-shadow: 0 0 12px rgba(42,123,107,.35); }
 
-.dash-grid { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
+.dash-grid { display: grid; grid-template-columns: 1fr minmax(300px, 380px); gap: 24px; }
 
 .sect-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .sect-more { font-size: 13px; color: var(--grn); font-weight: 600; text-decoration: none; }
@@ -370,7 +386,7 @@ onMounted(() => {
 .quick-item:hover .qi-arr { transform: translateX(3px); color: var(--grn); }
 
 .ldb-row { display: flex; align-items: center; gap: 9px; padding: 7px; border-radius: 8px; margin-bottom: 4px; }
-.ldb-me { background: rgba(57,255,138,.06); border: 1px solid var(--brd); }
+.ldb-me { background: var(--grn-b); border: 1px solid var(--brd); }
 .ldb-num { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: var(--bg); }
 
 @media(max-width:900px) {

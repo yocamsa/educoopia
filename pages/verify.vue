@@ -1,6 +1,7 @@
 <template>
   <div class="verify-page">
     <div class="verify-card">
+      <div class="verify-brand">EduCoop-IA</div>
       <div v-if="loading">Verificando correo electrónico...</div>
       <div v-else-if="error" class="error">{{ error }}</div>
       <div v-else class="success">
@@ -51,6 +52,13 @@ function goToLogin() {
 .verify-card {
   background: var(--s1); border: 1.5px solid var(--brd); border-radius: 18px;
   padding: 30px; text-align: center; max-width: 400px; width: 100%;
+}
+.verify-brand {
+  font-family: var(--fd);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--txt);
+  margin-bottom: 16px;
 }
 .error { color: #ff5c5c; margin-bottom: 20px; }
 .success { color: var(--grn); }

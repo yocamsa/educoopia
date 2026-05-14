@@ -7,8 +7,8 @@
     <aside class="sidebar" :class="{ collapsed: sidebarCollapsed, open: sidebarOpen }">
       <div class="sb-top">
         <NuxtLink to="/" class="sb-logo">
-          <div class="sb-logo-box">IA</div>
-          <span v-if="!sidebarCollapsed" class="sb-logo-text"><em>IA</em>-COOP</span>
+          <div class="sb-logo-box">EC</div>
+          <span v-if="!sidebarCollapsed" class="sb-logo-text">EduCoop-IA</span>
         </NuxtLink>
         <button class="sb-toggle" @click="sidebarCollapsed = !sidebarCollapsed" title="Colapsar">
           {{ sidebarCollapsed ? '→' : '←' }}
@@ -19,7 +19,7 @@
         <NuxtLink v-for="item in navItems" :key="item.to"
           :to="item.to" class="sb-link" active-class="sb-link-active"
           :title="item.label">
-          <span class="sb-icon">{{ item.icon }}</span>
+          <span class="sb-icon" v-html="item.icon"></span>
           <span v-if="!sidebarCollapsed" class="sb-label">{{ item.label }}</span>
         </NuxtLink>
       </nav>
@@ -31,7 +31,11 @@
             <div class="sb-user-name">{{ user.profile.name.split(' ')[0] }}</div>
             <div class="sb-user-level">Nv.{{ user.level }} · {{ user.levelName }}</div>
           </div>
-          <button class="sb-switch-btn" @click="handleLogout" title="Cerrar sesión">🚪</button>
+          <button class="sb-switch-btn" @click="handleLogout" title="Cerrar sesión">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </button>
         </template>
       </div>
     </aside>
@@ -41,7 +45,11 @@
       <!-- Top bar -->
       <header class="topbar">
         <div class="topbar-left">
-          <button class="mobile-menu-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
+          <button class="mobile-menu-btn" @click="sidebarOpen = !sidebarOpen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+              <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
           <h1 class="page-title">{{ pageTitle }}</h1>
         </div>
         <div class="topbar-right">
@@ -54,7 +62,12 @@
             <span class="xp-chip-level">Nv.{{ user.level }}</span>
           </div>
           <!-- Streak -->
-          <div class="streak-chip">🔥 {{ user.streak }}</div>
+          <div class="streak-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            {{ user.streak }}
+          </div>
         </div>
       </header>
 
@@ -62,6 +75,7 @@
       <main class="app-content">
         <slot />
       </main>
+      <AppFooter />
     </div>
   </div>
 </template>
@@ -98,11 +112,18 @@ onMounted(async () => {
   }
 })
 
+// Iconos SVG para navegación (18x18, viewBox 0 0 24 24, stroke="currentColor" fill="none")
+const icons = {
+  dashboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
+  cursos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5A2.5 2.5 0 0 1 4 19.5Z"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M9 7h6"/><path d="M9 11h6"/></svg>',
+  simulador: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>',
+  certificados: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>',
+}
 const navItems = [
-  { to: '/app/dashboard', icon: '🏠', label: 'Dashboard' },
-  { to: '/app/cursos', icon: '📚', label: 'Mis Cursos' },
-  { to: '/app/simulador', icon: '📊', label: 'Simulador' },
-  { to: '/app/certificados', icon: '🏆', label: 'Certificados' },
+  { to: '/app/dashboard', icon: icons.dashboard, label: 'Dashboard' },
+  { to: '/app/cursos', icon: icons.cursos, label: 'Mis Cursos' },
+  { to: '/app/simulador', icon: icons.simulador, label: 'Simulador' },
+  { to: '/app/certificados', icon: icons.certificados, label: 'Certificados' },
 ]
 
 const initials = computed(() => {
@@ -119,21 +140,20 @@ const pageTitles: Record<string, string> = {
 const pageTitle = computed(() => {
   const p = route.path
   if (p.startsWith('/app/cursos/')) return 'Curso'
-  return pageTitles[p] ?? 'IA-COOP'
+  return pageTitles[p] ?? 'EduCoop-IA'
 })
 </script>
 
 <style scoped>
-.app-shell { display: flex; min-height: 100vh; }
+.app-shell { display: flex; height: 100vh; overflow: hidden; width: 100%; }
 
 /* ── Sidebar ─────────────────────────── */
 .sidebar {
-  width: 240px; min-height: 100vh;
+  width: 240px; flex-shrink: 0;
   background: var(--s1); border-right: 1px solid var(--brd);
   display: flex; flex-direction: column;
-  position: sticky; top: 0; height: 100vh;
+  height: 100vh; overflow-y: auto;
   transition: width .25s cubic-bezier(.16,1,.3,1);
-  flex-shrink: 0;
 }
 .sidebar.collapsed { width: 60px; }
 
@@ -149,9 +169,8 @@ const pageTitle = computed(() => {
 .sb-logo-box {
   width: 30px; height: 30px; background: var(--grn); border-radius: 8px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  color: var(--bg); font-size: 11px; font-weight: 900; letter-spacing: -.5px;
+  color: #fff; font-size: 11px; font-weight: 900; letter-spacing: -.5px;
 }
-.sb-logo-text em { color: var(--grn); font-style: normal; }
 .sb-toggle {
   background: transparent; border: 1px solid var(--brd); border-radius: 6px;
   color: var(--txt3); width: 24px; height: 24px; font-size: 10px;
@@ -170,7 +189,8 @@ const pageTitle = computed(() => {
 }
 .sb-link:hover { background: var(--s2); color: var(--txt); }
 .sb-link-active { background: var(--grn-a) !important; color: var(--grn) !important; border: 1px solid var(--brd2); }
-.sb-icon { font-size: 17px; flex-shrink: 0; width: 20px; text-align: center; }
+.sb-icon { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 20px; height: 20px; }
+.sb-icon svg { width: 18px; height: 18px; }
 .sb-label { font-size: 13px; }
 
 .sb-user {
@@ -196,20 +216,21 @@ const pageTitle = computed(() => {
 .sb-user-level { font-size: 11px; color: var(--txt3); }
 
 /* ── Main ────────────────────────────── */
-.app-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.app-main { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
 
 .topbar {
-  position: sticky; top: 0; z-index: 50;
-  background: rgba(5,14,8,.9); backdrop-filter: blur(20px);
+  flex-shrink: 0;
+  background: rgba(246,244,239,.9); backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--brd);
   padding: 12px 28px;
   display: flex; align-items: center; justify-content: space-between;
 }
 .page-title { font-family: var(--fd); font-size: 18px; font-weight: 700; color: var(--txt); }
 .mobile-menu-btn {
-  display: none; background: transparent; border: 1px solid var(--brd);
-  border-radius: 6px; color: var(--txt); width: 32px; height: 32px;
-  font-size: 18px; cursor: pointer; margin-right: 12px;
+  display: none; align-items: center; justify-content: center;
+  background: transparent; border: 1px solid var(--brd);
+  border-radius: 6px; color: var(--txt); width: 34px; height: 34px;
+  font-size: 18px; cursor: pointer; margin-right: 12px; padding: 0;
 }
 .topbar-right { display: flex; align-items: center; gap: 12px; }
 
@@ -233,14 +254,15 @@ const pageTitle = computed(() => {
 .xp-chip-level { font-size: 11px; color: var(--txt3); font-weight: 600; }
 
 .streak-chip {
+  display: flex; align-items: center; gap: 5px;
   background: rgba(255,96,88,.1); border: 1px solid rgba(255,96,88,.25);
   border-radius: 100px; padding: 6px 12px; font-size: 13px; font-weight: 700; color: var(--crl);
 }
 
-.app-content { flex: 1; padding: 28px; overflow-y: auto; }
+.app-content { flex: 1; padding: 32px; overflow-y: auto; min-height: 0; }
 
 @media (max-width: 768px) {
-  .app-shell { flex-direction: column; }
+  .app-shell { flex-direction: column; height: 100dvh; }
   .sidebar { 
     position: fixed; z-index: 100; height: 100%; 
     transform: translateX(-100%); width: 240px;

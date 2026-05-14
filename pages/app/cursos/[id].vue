@@ -59,7 +59,7 @@
         <div class="comp-xp">+{{ course.totalXP }} XP ganados 🚀</div>
         <div class="comp-actions">
           <NuxtLink to="/app/certificados" class="btn btn-p" style="font-size:15px;padding:14px 28px;">
-            🏆 Ver mi certificado
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg> Ver mi certificado
           </NuxtLink>
           <NuxtLink to="/app/cursos" class="btn btn-o" style="font-size:15px;padding:14px 28px;">
             Explorar más cursos
@@ -419,7 +419,7 @@ onMounted(() => {
   transition: all .18s; user-select: none;
 }
 .mod-hd:hover { border-color: var(--brd2); }
-.mod-hd.mod-done { background: rgba(57,255,138,.06); border-color: var(--brd2); }
+.mod-hd.mod-done { background: var(--grn-b); border-color: var(--brd2); }
 .mod-hd.mod-active { background: var(--s3); border-color: var(--brd2); }
 .mod-hd-icon { font-size: 12px; flex-shrink: 0; }
 .mod-hd-title { font-size: 12px; font-weight: 700; color: var(--txt); line-height: 1.3; }
@@ -473,7 +473,7 @@ onMounted(() => {
 .q-progress { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; font-size: 13px; font-weight: 600; color: var(--txt3); }
 .q-dots { display: flex; gap: 6px; }
 .q-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--s3); border: 1px solid var(--brd); transition: all .2s; }
-.q-dot.active { background: var(--grn); border-color: var(--grn); box-shadow: 0 0 8px rgba(57,255,138,.4); }
+.q-dot.active { background: var(--grn); border-color: var(--grn); box-shadow: 0 0 8px rgba(42,123,107,.35); }
 .q-dot.correct { background: var(--grn); border-color: var(--grn); }
 .q-dot.wrong { background: var(--crl); border-color: var(--crl); }
 
@@ -488,7 +488,7 @@ onMounted(() => {
 }
 .q-opt:hover:not(:disabled) { border-color: var(--brd2); background: var(--s3); }
 .q-opt.selected { border-color: var(--grn); background: var(--grn-a); }
-.q-opt.correct { border-color: var(--grn); background: rgba(57,255,138,.12); color: var(--grn); }
+.q-opt.correct { border-color: var(--grn); background: var(--grn-a); color: var(--grn); }
 .q-opt.wrong { border-color: var(--crl); background: rgba(255,96,88,.1); color: var(--crl); }
 .q-opt:disabled { cursor: default; }
 .q-opt-letter {
@@ -500,7 +500,7 @@ onMounted(() => {
   padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 600;
   background: rgba(255,96,88,.1); color: var(--crl); border: 1px solid rgba(255,96,88,.25);
 }
-.q-feedback.correct { background: rgba(57,255,138,.1); color: var(--grn); border-color: var(--brd2); }
+.q-feedback.correct { background: var(--grn-a); color: var(--grn); border-color: var(--brd2); }
 
 .quiz-result { text-align: center; padding: 40px 20px; }
 .qr-score { font-family: var(--fd); font-size: 52px; font-weight: 800; color: var(--crl); margin-bottom: 12px; }

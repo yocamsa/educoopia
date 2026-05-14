@@ -10,6 +10,8 @@
   "dependencies": {
     "@pinia/nuxt": "^0.5.4",
     "appwrite": "^25.0.0",
+    "@vueuse/core": "^10.11.0",
+    "gsap": "^3.12.5",
     "nuxt": "^3.13.0",
     "pinia": "^2.1.7"
   }

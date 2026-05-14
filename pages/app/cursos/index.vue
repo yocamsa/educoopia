@@ -3,7 +3,11 @@
     <!-- Filters -->
     <div class="filters-bar rev" :class="{ on: mounted }">
       <div class="search-wrap">
-        <span class="search-icon">🔍</span>
+        <span class="search-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </span>
         <input v-model="search" class="search-input" placeholder="Buscar cursos...">
       </div>
       <div class="filter-chips">
@@ -53,9 +57,9 @@
         <p class="ccard-desc">{{ c.description }}</p>
 
         <div class="ccard-meta">
-          <span>⏱ {{ c.duration }} min</span>
-          <span>⚡ {{ c.totalXP }} XP</span>
-          <span>📋 {{ c.modules.length }} módulos</span>
+            <span>{{ c.duration }} min</span>
+            <span>{{ c.totalXP }} XP</span>
+            <span>{{ c.modules.length }} módulos</span>
         </div>
 
         <div class="ccard-footer">
@@ -71,7 +75,11 @@
     </div>
 
     <div v-else class="empty">
-      <div style="font-size:48px;margin-bottom:12px">🔍</div>
+      <div style="margin-bottom:12px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="48" height="48" style="color:var(--txt3)">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><path d="M8 11h6"/><path d="M11 8v6"/>
+        </svg>
+      </div>
       <h3>No se encontraron cursos</h3>
       <p>Prueba con otros filtros o términos de búsqueda</p>
       <button class="btn btn-o" style="margin-top:16px" @click="clearFilters">Limpiar filtros</button>
@@ -113,14 +121,14 @@ onMounted(() => { mounted.value = true })
 </script>
 
 <style scoped>
-.cursos-page { max-width: 1100px; }
+.cursos-page { width: 100%; overflow-x: hidden; }
 
 .filters-bar {
   background: var(--s1); border: 1px solid var(--brd); border-radius: 16px;
   padding: 16px; margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
 }
 .search-wrap { position: relative; flex: 1; min-width: 220px; }
-.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); display: flex; color: var(--txt3); }
 .search-input {
   width: 100%; background: var(--s2); border: 1px solid var(--brd); border-radius: 100px;
   padding: 9px 16px 9px 36px; font-size: 13px; color: var(--txt); outline: none;
